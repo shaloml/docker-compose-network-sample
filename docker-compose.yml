@@ -1,0 +1,52 @@
+version: '3.4'
+
+services:
+  webapi:
+    image: ${DOCKER_REGISTRY-}webapi
+    build:
+      context: .
+      dockerfile: webApi/Dockerfile
+    ports:
+      - 8000:80
+    volumes: 
+      - type: bind 
+        source: c:\logs
+        target: /logs
+    networks:
+      - app-layer
+      - private-layer
+
+  exercise:
+    image: ${DOCKER_REGISTRY-}exercise
+    build:
+      context: .
+      dockerfile: exercise/Dockerfile
+    volumes: 
+      - type: bind 
+        source: c:\logs
+        target: /logs
+    networks:
+        - private-layer
+        - db-layer
+
+  db1:
+    image:  mcr.microsoft.com/mssql/server:2019-latest
+    container_name: my-db
+    environment:
+        - ACCEPT_EULA=Y
+        - SA_PASSWORD=SecretP@ssw0rd
+        - MSSQL_PID=Developer
+    volumes: 
+      - type: bind 
+        source: c:/sqlvolume/data
+        target: /var/opt/mssql/data
+      - type: bind 
+        source: c:/sqlvolume/log
+        target: /var/opt/mssql/log
+    networks:
+      - db-layer
+
+networks:
+  db-layer:
+  private-layer:
+  app-layer:
